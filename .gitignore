@@ -1,2 +1,8 @@
 x64
 .vs
+TCPClient.vcxproj.user
+TCPServer_GPU.vcxproj.user
+TCPServer_CPU.vcxproj.user
+Doc
+OpenCV
+data

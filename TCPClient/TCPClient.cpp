@@ -1,47 +1,85 @@
-﻿// TCPClient.cpp : 此文件包含 "main" 函数。程序执行将在此处开始并结束。
-//
-#include <asio.hpp>
+﻿#include <asio.hpp>
 #include <iostream>
-#include <string>
+#include <fstream>
+#include <vector>
 
-void send_command(asio::io_context& io_context, const std::string& command) {
-    asio::ip::tcp::resolver resolver(io_context);
-    asio::ip::tcp::socket socket(io_context);
+void send_request(asio::ip::tcp::socket& socket, const std::string& command) {
+    // 在请求命令后添加结束标志
+    std::string request = command + "END";
+    asio::write(socket, asio::buffer(request));
+}
 
-    // Resolve the server address
-    auto endpoints = resolver.resolve("127.0.0.1", "12345");
-    asio::connect(socket, endpoints);
+void receive_response(asio::ip::tcp::socket& socket) {
+    try {
+        // 读取响应，直到遇到 "END"
+        asio::streambuf buf;
+        asio::read_until(socket, buf, "END");
 
-    // Send the command
-    asio::write(socket, asio::buffer(command + '\n'));
+        std::istream is(&buf);
+        std::string response;
+        std::getline(is, response);
+        std::cout << "Received response: " << response << std::endl;
+    }
+    catch (const std::exception& e) {
+        std::cerr << "Error receiving response: " << e.what() << std::endl;
+    }
+}
 
-    // Read the response
-    std::string response;
-    asio::read_until(socket, asio::dynamic_buffer(response), '\n');
-    std::cout << "Server response: " << response << std::endl;
+void receive_image(asio::ip::tcp::socket& socket) {
+    try {
+        uint32_t size;
+        asio::read(socket, asio::buffer(&size, sizeof(size)));
+
+        std::vector<char> image_data(size);
+        asio::read(socket, asio::buffer(image_data));
+
+        // 读取结束标志
+        asio::streambuf buf;
+        asio::read_until(socket, buf, "END");
+        std::istream is(&buf);
+        std::string end_signal;
+        std::getline(is, end_signal);  // 获取 "END" 标志
+
+        std::cout << "Image received, saving as received_image.jpg\n";
+
+        // 保存图片到本地
+        std::ofstream file("received_image.jpg", std::ios::binary);
+        file.write(image_data.data(), image_data.size());
+    }
+    catch (const std::exception& e) {
+        std::cerr << "Error receiving image: " << e.what() << std::endl;
+    }
 }
 
 int main() {
+    asio::io_context io_context;
+    asio::ip::tcp::socket socket(io_context);
+    asio::ip::tcp::resolver resolver(io_context);
+    auto endpoints = resolver.resolve("127.0.0.1", "12346");
+
     try {
-        asio::io_context io_context;
-        send_command(io_context, "GetParam");
-        send_command(io_context, "GetPhoto");
-        send_command(io_context, "Infer");
+        // 连接到 TCPServer_GPU
+        asio::connect(socket, endpoints);
+
+        // 第一次命令：GetParam
+        send_request(socket, "GetParam");
+        receive_response(socket);
+
+        // 第二次命令：GetPhoto
+        send_request(socket, "GetPhoto");
+        receive_image(socket);
+
+        // 第三次命令：Infer
+        send_request(socket, "Infer");
+        receive_response(socket);
+
+        // 保持连接打开，直到所有请求都完成
+        std::cout << "All requests processed, closing connection." << std::endl;
+
     }
     catch (const std::exception& e) {
-        std::cerr << "Exception: " << e.what() << std::endl;
+        std::cerr << "Error: " << e.what() << std::endl;
     }
-    
+
     return 0;
 }
-
-// 运行程序: Ctrl + F5 或调试 >“开始执行(不调试)”菜单
-// 调试程序: F5 或调试 >“开始调试”菜单
-
-// 入门使用技巧: 
-//   1. 使用解决方案资源管理器窗口添加/管理文件
-//   2. 使用团队资源管理器窗口连接到源代码管理
-//   3. 使用输出窗口查看生成输出和其他消息
-//   4. 使用错误列表窗口查看错误
-//   5. 转到“项目”>“添加新项”以创建新的代码文件，或转到“项目”>“添加现有项”以将现有代码文件添加到项目
-//   6. 将来，若要再次打开此项目，请转到“文件”>“打开”>“项目”并选择 .sln 文件
