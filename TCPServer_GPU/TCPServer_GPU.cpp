@@ -2,10 +2,10 @@
 #include <iostream>
 #include <string>
 #include "intrinsic.h"
-#include "chessboard_pose.h"
-#include "solar_panel_pose.h"
-#include "stereo3d.h"
-#include "yolov8.h"
+//#include "chessboard_pose.h"
+//#include "solar_panel_pose.h"
+//#include "stereo3d.h"
+//#include "yolov8.h"
 
 void get_image_from_cpu(asio::ip::tcp::socket& socket) {
     asio::io_context io_context;
@@ -41,11 +41,14 @@ void get_image_from_cpu(asio::ip::tcp::socket& socket) {
 
     // 发送结束标志
     asio::write(socket, asio::buffer("\n"));
+
+    server_socket.close();
 }
 
 void handle_client(asio::ip::tcp::socket& socket) {
     try {
-        while (true) {
+        //while (true) 
+        {
             // 读取客户端请求命令，直到遇到 "\n"
             asio::streambuf buf;
             asio::read_until(socket, buf, "\n");
@@ -54,7 +57,7 @@ void handle_client(asio::ip::tcp::socket& socket) {
             std::getline(is, command);
             std::cout << "Received command: " << command << std::endl;
             command = command.substr(0, command.find("\n"));
-            if (command == " intrinsics") {
+            if (command == "intrinsics") {
                 std::string response = "response-intrinsics";
                 asio::write(socket, asio::buffer(response));
                 // 发送结束标志
@@ -90,31 +93,31 @@ void handle_client(asio::ip::tcp::socket& socket) {
 }
 
 int main() {
-    //1. 调用intrinsic.h中的load_intrinsic函数，加载相机的内参数，这些内参数在后面的接口中会被使用，应定义成全局变量。下面是示例代码：
-    cv::Mat lcam_mat, lcam_dist, rcam_mat, rcam_dist, r_mat, t_vect;
-    int ret_flag = load_intrinsic("intrinsics.xml", lcam_mat, lcam_dist, rcam_mat, rcam_dist, r_mat, t_vect);
-    if (ret_flag == 0)
-    {
-        // 加载失败
-    }
+    ////1. 调用intrinsic.h中的load_intrinsic函数，加载相机的内参数，这些内参数在后面的接口中会被使用，应定义成全局变量。下面是示例代码：
+    //cv::Mat lcam_mat, lcam_dist, rcam_mat, rcam_dist, r_mat, t_vect;
+    //int ret_flag = load_intrinsic("intrinsics.xml", lcam_mat, lcam_dist, rcam_mat, rcam_dist, r_mat, t_vect);
+    //if (ret_flag == 0)
+    //{
+    //    // 加载失败
+    //}
 
-    //2.初始化实例分割模型，该模型会在后面的接口中使用，应定义成全局变量。下面是示例代码：
-    //头文件：yolov8.h
-    YOLO seg_model;
-    int load_result = seg_model.Init("solar_panel_seg.engine");
-    if (load_result == 0)
-    {
-        // 加载失败
-    }
+    ////2.初始化实例分割模型，该模型会在后面的接口中使用，应定义成全局变量。下面是示例代码：
+    ////头文件：yolov8.h
+    //YOLO seg_model;
+    //int load_result = seg_model.Init("solar_panel_seg.engine");
+    //if (load_result == 0)
+    //{
+    //    // 加载失败
+    //}
 
-    //3.初始化双目3D重建模型，该模型会在后面的接口中被使用，应定义成全局变量。下面是示例代码：
-    //头文件：stereo3d.h
-    Stereo stereo_model;
-    load_result = stereo_model.Initialize("stereo_3d.engine");
-    if (load_result == 0)
-    {
-        // 加载失败
-    }
+    ////3.初始化双目3D重建模型，该模型会在后面的接口中被使用，应定义成全局变量。下面是示例代码：
+    ////头文件：stereo3d.h
+    //Stereo stereo_model;
+    //load_result = stereo_model.Initialize("stereo_3d.engine");
+    //if (load_result == 0)
+    //{
+    //    // 加载失败
+    //}
     
     try {
         asio::io_context io_context;

@@ -5,7 +5,6 @@
 #include <vector>
 #include <cstdlib>  // for std::system
 #include <cstdio>   // for popen and pclose
-//#include <thread>
 
 // 检查文件是否存在
 bool fileExists(const std::string& filename) {
@@ -53,9 +52,8 @@ void handle_client(asio::ip::tcp::socket& socket) {
         std::string command;
         std::getline(is, command);
         std::cout << "Received command: " << command << std::endl;
-        command = command.substr(0, command.find("\n"));
+        //command = command.substr(0, command.find("\n"));
         if (command == "capture_2d") {
-            
             //"libcamera-still -t 1000 -e png -o out.png"
             //std::string outputFile = "out.png";
 
@@ -76,11 +74,10 @@ void handle_client(asio::ip::tcp::socket& socket) {
             //else {
             //    std::cerr << "Failed to save photo." << std::endl;
             //}
-
+            //std::ifstream file("out.png", std::ios::binary);
             
             // 读取图片 l.jpg
             std::ifstream file("D:\\Workspace\\TCPServer_GPU\\x64\\Debug\\l.jpg", std::ios::binary);
-            //std::ifstream file("out.png", std::ios::binary);
             if (!file) {
                 std::cerr << "Failed to open image file." << std::endl;
                 return;
