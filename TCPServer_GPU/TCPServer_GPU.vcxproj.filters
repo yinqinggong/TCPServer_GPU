@@ -19,4 +19,21 @@
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="chessboard_pose.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="intrinsic.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="solar_panel_pose.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="stereo3d.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="yolov8.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+  </ItemGroup>
 </Project>
